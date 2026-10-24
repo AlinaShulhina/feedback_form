@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Потік монет — планування особистого бюджету</title>
+  <meta name="description" content="Потік монет — наочний симулятор заощаджень, що моделює ваш капітал у реальному часі.">
+  <meta name="theme-color" content="#081E35">
+  <!-- Збірка: npx @tailwindcss/cli -i styles/style.css -o styles/output.css --minify -->
+  <link rel="stylesheet" href="styles/output.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body id="top" class="bg-page leading-body text-navy antialiased">
+
+<svg class="absolute size-0 overflow-hidden" aria-hidden="true" focusable="false">
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></symbol>
+  <symbol id="i-x-social" viewBox="0 0 24 24"><path d="M4 4l11.733 16h4.267l-11.733-16zM4 20l6.768-6.768m2.46-2.46L20 4"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></symbol>
+  <symbol id="i-youtube" viewBox="0 0 24 24"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></symbol>
+</svg>
+
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-control focus:bg-action focus:px-4 focus:py-3 focus:font-semibold focus:text-white">Перейти до основного вмісту</a>
+
+<!-- HEADER (порядок у DOM: логотип → кнопка меню → навігація, щоб Tab після відкриття меню йшов у меню) -->
+<header class="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur">
+  <div class="wrap flex flex-wrap items-center justify-between gap-x-4 py-2">
+    <a href="#top" class="inline-flex min-h-12 items-center gap-2 rounded-control font-heading text-xl font-bold transition hover:text-action">
+      <span class="logo-tile"><img src="assets/logo.svg" alt="" class="size-16 max-w-none"></span>
+      Потік монет
+    </a>
+    <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" class="grid size-12 place-items-center rounded-control border border-line-strong text-navy transition hover:bg-mint aria-expanded:bg-mint xl:hidden">
+      <svg class="ico ico-lg" aria-hidden="true"><use href="#i-menu"/></svg>
+      <span class="sr-only">Меню</span>
+    </button>
+    <nav id="site-nav" aria-label="Головна навігація" class="site-nav order-last basis-full pb-1 xl:order-none xl:basis-auto xl:pb-0">
+      <ul class="flex flex-col gap-1 xl:flex-row xl:items-center">
+        <li><a class="nav-link" href="#benefits">Переваги</a></li>
+        <li><a class="nav-link" href="#process">Процес</a></li>
+        <li><a class="nav-link" href="#why">Чому ми</a></li>
+        <li><a class="nav-link" href="#reviews">Відгуки</a></li>
+        <li><a class="nav-link" href="#faq">FAQ</a></li>
+        <li><a class="nav-link" href="#contacts">Контакти</a></li>
+        <li class="mt-1 xl:mt-0 xl:ml-2"><a href="#calculator" class="btn w-full xl:w-auto">Змоделювати свій капітал</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <!-- HERO -->
+  <section aria-labelledby="hero-title" class="hero section relative isolate flex items-center overflow-hidden bg-white">
+    <div class="absolute -top-24 -right-24 -z-10 hidden size-96 rounded-full bg-mist/30 blur-3xl lg:block" aria-hidden="true"></div>
+    <div class="wrap grid items-center gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <h1 id="hero-title" class="text-h1">Перетворіть фінансову тривожність на впевнений контроль вашого майбутнього</h1>
+        <p class="mt-5 max-w-xl text-lg text-muted">Наочний симулятор заощаджень, що моделює ваш капітал у реальному часі. Без нудних таблиць та складних банківських термінів.</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <a href="#calculator" class="btn">Змоделювати свій капітал <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+          <a href="#benefits" class="btn btn-ghost">Дізнатись більше</a>
+        </div>
+      </div>
+      <!-- hero.svg широкий (16:9), картинка в його правій третині, тому масштаб і зсув. Краще обрізати viewBox ресурсу й замінити на size-full object-contain -->
+      <div class="relative hidden aspect-square overflow-hidden lg:col-span-5 lg:block" aria-hidden="true">
+        <img src="assets/hero.svg" alt="" loading="lazy" decoding="async" class="absolute top-1/2 left-1/2 w-[292%] max-w-none -translate-x-[66.9%] -translate-y-[53%] mix-blend-multiply">
+      </div>
+    </div>
+  </section>
+
+  <!-- СИМУЛЯТОР -->
+  <section id="calculator" aria-labelledby="calc-title" class="section bg-white">
+    <div class="wrap">
+      <p class="pill">Калькулятор</p>
+      <h2 id="calc-title" class="text-center text-h2">Симулятор заощаджень</h2>
+      <p class="mx-auto mt-3 max-w-2xl text-center text-muted">Рухайте повзунки й одразу бачте, скільки накопичите.</p>
+
+      <form id="sim" class="mt-8 overflow-x-clip rounded-calc border border-line bg-white p-5 shadow-card md:p-8" novalidate>
+        <div role="tablist" aria-label="Кроки симулятора" class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <button type="button" role="tab" id="tab-0" aria-controls="panel-0" aria-selected="true" tabindex="0" class="tab">Дохід</button>
+          <button type="button" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="false" tabindex="-1" class="tab">Витрати</button>
+          <button type="button" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1" class="tab">Відсоток</button>
+          <button type="button" role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false" tabindex="-1" class="tab">Періодичність</button>
+          <button type="button" role="tab" id="tab-4" aria-controls="panel-4" aria-selected="false" tabindex="-1" class="tab">Роки</button>
+          <button type="button" role="tab" id="tab-5" aria-controls="panel-5" aria-selected="false" tabindex="-1" class="tab">Результат</button>
+        </div>
+
+        <div role="tabpanel" id="panel-0" aria-labelledby="tab-0" class="mt-8 space-y-6">
+          <div>
+            <div class="slider-head"><label for="income" class="font-medium text-ink-blue">Ваш дохід</label><output id="income-out" for="income" aria-live="off" class="out"></output></div>
+            <input id="income" name="income" type="range" min="5000" max="300000" step="1000" value="40000" class="range">
+            <div class="flex justify-between text-sm text-muted"><span>5 000 ₴</span><span>300 000 ₴</span></div>
+          </div>
+          <fieldset>
+            <legend class="font-medium text-ink-blue">Як рахувати дохід</legend>
+            <div class="mt-2 grid max-w-md grid-cols-2 gap-2">
+              <label class="relative"><input class="peer sr-only" type="radio" name="incomePeriod" value="month" checked><span class="choice">На місяць</span></label>
+              <label class="relative"><input class="peer sr-only" type="radio" name="incomePeriod" value="year"><span class="choice">На рік</span></label>
+            </div>
+          </fieldset>
+          <button type="button" data-next aria-label="Далі: витрати" class="btn">Далі <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+        </div>
+        <div role="tabpanel" id="panel-1" aria-labelledby="tab-1" hidden class="mt-8 space-y-6">
+          <div>
+            <div class="slider-head"><label for="expenses" class="font-medium text-ink-blue">Ваші витрати</label><output id="expenses-out" for="expenses" aria-live="off" class="out"></output></div>
+            <input id="expenses" name="expenses" type="range" min="0" max="250000" step="1000" value="28000" class="range">
+            <div class="flex justify-between text-sm text-muted"><span>0 ₴</span><span>250 000 ₴</span></div>
+          </div>
+          <p id="expenses-note" class="text-muted"></p>
+          <button type="button" data-next aria-label="Далі: відсоток" class="btn">Далі <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+        </div>
+        <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden class="mt-8 space-y-6">
+          <div>
+            <div class="slider-head"><label for="rate" class="font-medium text-ink-blue">Річний відсоток</label><output id="rate-out" for="rate" aria-live="off" class="out"></output></div>
+            <input id="rate" name="rate" type="range" min="0" max="30" step="0.5" value="12" class="range">
+            <div class="flex justify-between text-sm text-muted"><span>0 %</span><span>30 %</span></div>
+          </div>
+          <button type="button" data-next aria-label="Далі: періодичність" class="btn">Далі <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+        </div>
+        <div role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden class="mt-8 space-y-6">
+          <fieldset>
+            <legend class="font-medium text-ink-blue">Як часто ви відкладаєте</legend>
+            <div class="mt-2 grid max-w-md grid-cols-2 gap-2">
+              <label class="relative"><input class="peer sr-only" type="radio" name="savePeriod" value="month" checked><span class="choice">Щомісяця</span></label>
+              <label class="relative"><input class="peer sr-only" type="radio" name="savePeriod" value="year"><span class="choice">Щороку</span></label>
+            </div>
+          </fieldset>
+          <p class="text-muted">Щороку означає один внесок на початку кожного року на суму 12 місячних заощаджень.</p>
+          <button type="button" data-next aria-label="Далі: роки" class="btn">Далі <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+        </div>
+        <div role="tabpanel" id="panel-4" aria-labelledby="tab-4" hidden class="mt-8 space-y-6">
+          <div>
+            <div class="slider-head"><label for="duration" class="font-medium text-ink-blue">Тривалість</label><output id="duration-out" for="duration" aria-live="off" class="out"></output></div>
+            <input id="duration" name="duration" type="range" min="1" max="30" step="1" value="10" class="range">
+            <div class="flex justify-between text-sm text-muted"><span>1</span><span>30</span></div>
+          </div>
+          <fieldset>
+            <legend class="font-medium text-ink-blue">Одиниця</legend>
+            <div class="mt-2 grid max-w-md grid-cols-2 gap-2">
+              <label class="relative"><input class="peer sr-only" type="radio" name="durUnit" value="years" checked><span class="choice">Роки</span></label>
+              <label class="relative"><input class="peer sr-only" type="radio" name="durUnit" value="months"><span class="choice">Місяці</span></label>
+            </div>
+          </fieldset>
+          <button type="button" data-next aria-label="Далі: результат" class="btn">Далі <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+        </div>
+
+        <div role="tabpanel" id="panel-5" aria-labelledby="tab-5" hidden class="mt-8">
+          <h3 class="sr-only">Результат симуляції</h3>
+          <div class="grid items-center gap-8 lg:grid-cols-2">
+            <div class="min-w-0">
+              <p id="res-headline" class="font-medium text-ink-blue"></p>
+              <p id="res-total" class="mt-1 break-words font-heading text-figure font-bold text-action"></p>
+              <dl class="mt-6 grid gap-3 xl:grid-cols-2">
+                <div class="stat"><dt>Власні заощадження</dt><dd id="res-own"></dd></div>
+                <div class="stat"><dt>Відсотки</dt><dd id="res-interest"></dd></div>
+              </dl>
+              <p id="res-note" class="mt-3 text-muted"></p>
+              <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                <a href="#signup" class="btn sm:col-span-2">Створити план <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+                <button type="button" id="btn-save" class="btn btn-ghost"><svg class="ico" aria-hidden="true"><use href="#i-save"/></svg>Зберегти</button>
+                <button type="button" id="btn-share" class="btn btn-ghost"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>Поділитись</button>
+              </div>
+              <p class="mt-3 text-sm text-muted">«Зберегти» запам'ятовує прогноз лише в цьому браузері. Акаунт збереже сценарії на всіх пристроях.</p>
+              <p id="sim-status" class="status mt-3" role="status"></p>
+            </div>
+            <div class="rounded-card border border-line bg-page p-3 md:p-4">
+              <svg id="chart" viewBox="0 0 600 240" class="h-auto w-full" role="img" aria-labelledby="chart-title chart-desc">
+                <title id="chart-title">Графік зростання капіталу</title>
+                <desc id="chart-desc">Лінія показує, як зростають накопичення від старту до кінця обраного терміну. Підсумкову суму наведено текстом поруч.</desc>
+                <line x1="0" y1="220" x2="600" y2="220" class="stroke-line-strong" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <path id="chart-area" d="" class="fill-action/15"/>
+                <path id="chart-line" d="" class="fill-none stroke-action" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+              </svg>
+              <div class="mt-1 flex justify-between text-xs text-muted" aria-hidden="true"><span>Старт</span><span id="chart-end"></span></div>
+            </div>
+          </div>
+        </div>
+        <div id="sim-live" class="sr-only" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ПЕРЕВАГИ -->
+  <section id="benefits" aria-labelledby="benefits-title" class="section">
+    <div class="wrap grid items-center gap-10 lg:grid-cols-5">
+      <div class="lg:col-span-2">
+        <p class="pill pill-start">Можливості сервісу</p>
+        <h2 id="benefits-title" class="text-h2">Інструменти, що працюють на вашу фінансову свободу</h2>
+        <p class="mt-4 text-muted">Ми зібрали інструменти, які допомагають планувати бюджет, відкладати регулярно та бачити результат кожного кроку.</p>
+      </div>
+      <ul class="grid gap-4 sm:grid-cols-2 lg:col-span-3">
+        <li class="card"><span class="icon-tile"><img src="assets/icons/brain.svg" alt="" width="32" height="32" class="size-8"></span><h3 class="mt-4 text-xl">AI-підказки</h3><p class="mt-2 text-muted">Розумні підказки підкажуть, де скоротити витрати та збільшити накопичення.</p></li>
+        <li class="card"><span class="icon-tile"><img src="assets/icons/lock.svg" alt="" width="32" height="32" class="size-8"></span><h3 class="mt-4 text-xl">Безпека та прозорість</h3><p class="mt-2 text-muted">Ваші дані захищені надійним шифруванням, а логіка розрахунків повністю відкрита.</p></li>
+        <li class="card"><span class="icon-tile"><img src="assets/icons/building.svg" alt="" width="32" height="32" class="size-8"></span><h3 class="mt-4 text-xl">Інтеграція з банками</h3><p class="mt-2 text-muted">Підключіть свій банк за кілька секунд. Транзакції підтягнуться автоматично.</p></li>
+        <li class="card"><span class="icon-tile"><img src="assets/icons/cup.svg" alt="" width="32" height="32" class="size-8"></span><h3 class="mt-4 text-xl">Гейміфікація прогресу</h3><p class="mt-2 text-muted">Слідкуйте за досягненням цілей у реальному часі.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ПРОЦЕС -->
+  <section id="process" aria-labelledby="process-title" class="section bg-white">
+    <div class="wrap">
+      <p class="pill">Процес</p>
+      <h2 id="process-title" class="text-center text-h2">Як це працює</h2>
+      <ol class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <li class="card card-soft lg:col-span-2">
+          <p class="step-no">Крок 1</p>
+          <h3 class="mt-2 text-xl">Підключіть свій банк</h3>
+          <p class="mt-2 text-muted">Це займає кілька секунд, транзакції підтягнуться автоматично.</p>
+          <a href="#calculator" class="btn mt-5">Почати моделювання</a>
+        </li>
+        <li class="card card-soft lg:col-span-2">
+          <p class="step-no">Крок 2</p>
+          <h3 class="mt-2 text-xl">Отримайте AI-рекомендації</h3>
+          <p class="mt-2 text-muted">Розумні підказки підкажуть, де скоротити витрати та збільшити накопичення.</p>
+        </li>
+        <li class="card card-soft">
+          <p class="step-no">Крок 3</p>
+          <h3 class="mt-2 text-xl">Аналіз доходів і витрат</h3>
+          <p class="mt-2 text-muted">Система розкладе ваші фінанси по поличках без ручного введення.</p>
+        </li>
+        <li class="card card-soft">
+          <p class="step-no">Крок 4</p>
+          <h3 class="mt-2 text-xl">Моделювання заощаджень</h3>
+          <p class="mt-2 text-muted">Запустіть симулятор і побачите, як зростає ваш капітал.</p>
+        </li>
+        <li class="card card-dark dark-zone md:col-span-2">
+          <p class="step-no text-mist">Крок 5</p>
+          <h3 class="mt-2 text-xl">Відстежуйте свій прогрес</h3>
+          <p class="mt-2 text-white/80">Слідкуйте за досягненням цілей у реальному часі. Кожен крок наближає вас до фінансової свободи.</p>
+          <a href="#signup" class="btn btn-light mt-5">Створити план</a>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ВІДЕО -->
+  <section id="media" aria-labelledby="media-title" class="section">
+    <div class="wrap">
+      <p class="pill">Відео</p>
+      <h2 id="media-title" class="text-center text-h2">Подивіться сервіс у дії</h2>
+      <p class="mx-auto mt-3 max-w-2xl text-center text-muted">Коротке відео про те, як «Потік монет» допомагає планувати заощадження.</p>
+      <figure class="video mt-8">
+        <!-- Пропорцію задає лише CSS (.video__frame). Атрибути width/height на iframe не додавайте: height перебиває aspect-ratio -->
+        <iframe class="video__frame"
+          src="https://www.youtube.com/embed/CbJpHvMqnEY?hl=uk&amp;cc_load_policy=1&amp;rel=0"
+          title="Відео: як працює сервіс «Потік монет»" loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        <figcaption class="mt-3 text-center text-sm text-muted">Подивіться, як працює сервіс за хвилину.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ЧОМУ МИ -->
+  <section id="why" aria-labelledby="why-title" class="section dark-zone bg-navy text-white">
+    <div class="wrap">
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="pill">Чому ми</p>
+        <h2 id="why-title" class="text-h2">Ми замінюємо реактивне відстеження на проактивний контроль</h2>
+        <p class="mt-4 text-lg text-white/80">Ми віримо, що фінансове планування має бути зрозумілим кожному. Тому замість складних звітів ми показуємо живу картину вашого майбутнього й допомагаємо робити маленькі кроки, які складаються у велику різницю.</p>
+      </div>
+      <h3 class="mt-10 text-center text-2xl">Порівняння з іншими рішеннями</h3>
+      <p class="mt-2 text-center text-sm text-white/80 md:hidden">Таблицю можна прокручувати вбік.</p>
+      <div class="relative mt-4 overflow-x-auto rounded-card border border-line bg-white text-navy shadow-card md:mt-6" role="region" aria-label="Таблиця порівняння, прокручується горизонтально" tabindex="0">
+        <table class="cmp w-full min-w-160 border-collapse text-left">
+          <caption class="sr-only">Порівняння Потік монет з іншими сервісами та банківськими застосунками</caption>
+          <thead>
+            <tr><th scope="col">Можливість</th><th scope="col" class="text-action">Потік монет</th><th scope="col">Інші сервіси</th><th scope="col">Банківські застосунки</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Симулятор у реальному часі</th><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td></tr>
+            <tr><th scope="row">AI-підказки</th><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td></tr>
+            <tr><th scope="row">Гейміфікація прогресу</th><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td></tr>
+            <tr><th scope="row">Без складних термінів</th><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td><td><svg class="ico no" aria-hidden="true"><use href="#i-x"/></svg><span class="sr-only">Ні</span></td></tr>
+            <tr><th scope="row">Безкоштовний старт</th><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td><td><svg class="ico yes" aria-hidden="true"><use href="#i-check"/></svg><span class="sr-only">Так</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-8 text-center"><a href="#signup" class="btn btn-light">Створити план</a></div>
+    </div>
+  </section>
+
+  <!-- ВІДГУКИ -->
+  <section id="reviews" aria-labelledby="reviews-title" class="section">
+    <div class="wrap">
+      <p class="pill">Відгуки</p>
+      <h2 id="reviews-title" class="text-center text-h2">Відгуки користувачів</h2>
+      <ul id="review-list" class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3" hidden></ul>
+      <p id="review-empty" class="mt-8 text-center text-muted">Відгуків поки немає. Станьте першим.</p>
+
+      <details class="group mx-auto mt-10 max-w-3xl">
+        <summary class="btn btn-ghost mx-auto flex w-fit">Залишити відгук<svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
+        <form id="review-form" class="mt-6 rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
+          <h3 class="text-2xl">Залиште свій відгук</h3>
+          <p class="mt-1 text-sm text-muted">Поля з * обов'язкові.</p>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div><label for="r-name" class="label req">Ім'я</label><input id="r-name" name="name" type="text" required autocomplete="name" class="field"></div>
+            <div><label for="r-role" class="label">Роль або професія</label><input id="r-role" name="role" type="text" autocomplete="organization-title" class="field"></div>
+            <div class="sm:col-span-2">
+              <label for="r-rating" class="label">Оцінка</label>
+              <select id="r-rating" name="rating" class="field">
+                <option value="5">5 — чудово</option><option value="4">4 — добре</option><option value="3">3 — нормально</option><option value="2">2 — слабко</option><option value="1">1 — погано</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-5"><label for="r-text" class="label req">Ваш відгук</label><textarea id="r-text" name="text" rows="4" required class="field"></textarea></div>
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button type="submit" class="btn">Надіслати відгук</button>
+            <p id="review-status" class="status" role="alert" data-status></p>
+          </div>
+        </form>
+      </details>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" aria-labelledby="faq-title" class="section bg-white">
+    <div class="wrap wrap-md">
+      <h2 id="faq-title" class="text-center text-h2">FAQ</h2>
+      <div class="mt-8 space-y-3">
+        <details class="faq group"><summary><span>Чи безкоштовний сервіс?</span><svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>Так, базові можливості, зокрема симулятор заощаджень, доступні безкоштовно. Розширені функції з'являться в окремому тарифі.</p></details>
+        <details class="faq group"><summary><span>Наскільки точні розрахунки?</span><svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>Симулятор використовує складний відсоток із щомісячною капіталізацією. Це орієнтовний прогноз, а не гарантія реальної дохідності.</p></details>
+        <details class="faq group"><summary><span>Чи безпечно підключати банківський рахунок?</span><svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>Доступ надається лише для читання, а дані передаються в зашифрованому вигляді. Ви можете відкликати доступ будь-коли.</p></details>
+        <details class="faq group"><summary><span>Чи можна користуватись без реєстрації?</span><svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>Так, симулятор працює без акаунта. Реєстрація потрібна, щоб зберігати плани та отримувати підказки.</p></details>
+        <details class="faq group"><summary><span>Як видалити мої дані?</span><svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary><p>Напишіть нам через розділ «Контакти», і ми видалимо ваш акаунт та всі пов'язані дані.</p></details>
+      </div>
+      <div class="mt-8 rounded-card bg-mint p-5 text-center md:p-6">
+        <h3 class="text-xl">Ще є питання?</h3>
+        <p class="mt-2 text-muted">Наша команда відповідає протягом одного робочого дня.</p>
+        <a href="#contacts" class="btn mt-4">Контакти для звʼязку</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- РЕЄСТРАЦІЯ -->
+  <section id="signup" aria-labelledby="signup-title" class="section">
+    <div class="wrap wrap-sm">
+      <form id="signup-form" class="rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
+        <h2 id="signup-title" class="text-center text-h2">Створіть свій план</h2>
+        <p class="mt-2 text-center text-muted">Зареєструйтесь, щоб зберігати сценарії та отримувати підказки. Поля з * обов'язкові.</p>
+        <div class="mt-6 space-y-5">
+          <div><label for="s-name" class="label req">Ім'я</label><input id="s-name" name="name" type="text" required autocomplete="name" class="field"></div>
+          <div><label for="s-email" class="label req">Email</label><input id="s-email" name="email" type="email" required autocomplete="email" class="field"></div>
+          <div><label for="s-phone" class="label">Телефон</label><input id="s-phone" name="phone" type="tel" autocomplete="tel" placeholder="+380" class="field"></div>
+          <label for="s-terms" class="flex min-h-12 items-start gap-3">
+            <input id="s-terms" name="terms" type="checkbox" required class="mt-1 size-6 shrink-0 accent-action">
+            <span class="text-muted">Я погоджуюсь з <a href="/terms" class="text-link">умовами користування</a> та <a href="/privacy" class="text-link">політикою конфіденційності</a>. <span class="req" aria-hidden="true"></span></span>
+          </label>
+        </div>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button type="submit" class="btn">Створити</button>
+          <p id="signup-status" class="status" role="alert" data-status></p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- КОНТАКТИ -->
+  <section id="contacts" aria-labelledby="contacts-title" class="section bg-white">
+    <div class="wrap">
+      <p class="pill">Контакти</p>
+      <h2 id="contacts-title" class="text-center text-h2">Де нас знайти</h2>
+      <p class="mx-auto mt-3 max-w-2xl text-center text-muted">Напишіть нам або завітайте в офіс. Відповідаємо протягом одного робочого дня.</p>
+      <figure class="map mt-8">
+        <!-- TODO: цей embed веде на банкомат ПриватБанку; замініть src на карту реального офісу -->
+        <iframe class="map__frame"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20582.495349762772!2d23.984729244366296!3d49.84599142488702!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x473add78aff992b9%3A0xfd1bd3c868df38e5!2z0JHQsNC90LrQvtC80LDRgiDQn9GA0LjQstCw0YLQkdCw0L3Qug!5e0!3m2!1suk!2sua!4v1792513232625!5m2!1suk!2sua"
+          title="Інтерактивна карта Google Maps із адресою офісу" loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <figcaption class="sr-only">Карта з адресою офісу</figcaption>
+      </figure>
+      <address class="mx-auto mt-6 max-w-3xl not-italic md:mt-8">
+        <dl class="grid gap-4 text-center sm:grid-cols-3">
+          <div><dt class="text-sm text-muted">Адреса</dt><dd class="font-semibold">м. Львів, вул. Приклад, 1</dd></div>
+          <div><dt class="text-sm text-muted">Email</dt><dd><a href="mailto:hello@potikmonet.ua" class="text-link font-semibold underline-offset-4">hello@potikmonet.ua</a></dd></div>
+          <div><dt class="text-sm text-muted">Телефон</dt><dd><a href="tel:+380000000000" class="text-link font-semibold underline-offset-4">+380 00 000 00 00</a></dd></div>
+        </dl>
+      </address>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="dark-zone bg-footer text-white/80">
+  <div class="wrap grid gap-10 py-16 md:grid-cols-3 lg:grid-cols-12 lg:py-20">
+    <div class="md:col-span-3 lg:col-span-4">
+      <a href="#top" class="inline-flex min-h-12 items-center gap-3 rounded-control font-heading text-2xl font-bold text-white hover:underline hover:underline-offset-4">
+        <span class="logo-tile"><img src="assets/logo.svg" alt="" class="size-16 max-w-none"></span>
+        Потік монет
+      </a>
+      <p class="mt-6 max-w-md">Приєднуйтесь до розсилки, щоб першими дізнаватися про нові функції та релізи.</p>
+      <form id="news-form" class="mt-5 max-w-md" novalidate>
+        <label for="n-email" class="sr-only">Email для розсилки</label>
+        <div class="flex flex-col gap-3 xl:flex-row">
+          <input id="n-email" name="email" type="email" required autocomplete="email" placeholder="Введіть ваш email" class="field">
+          <button type="submit" class="btn shrink-0">Підписатися</button>
+        </div>
+        <p class="mt-4">Підписуючись, ви погоджуєтесь з нашою <a href="/privacy" class="font-semibold text-white underline underline-offset-4 hover:text-mist">Політикою конфіденційності</a> та надаєте згоду на отримання оновлень від нашої компанії.</p>
+        <p id="news-status" class="status mt-2" role="alert" data-status></p>
+      </form>
+    </div>
+    <nav aria-labelledby="foot-company" class="lg:col-span-2">
+      <h2 id="foot-company" class="foot-title">Компанія</h2>
+      <ul class="mt-4 flex flex-col gap-2">
+        <li><a class="foot-link" href="/blog">Блог</a></li>
+        <li><a class="foot-link" href="/about">Про нас</a></li>
+        <li><a class="foot-link" href="#contacts">Контакти</a></li>
+      </ul>
+    </nav>
+    <nav aria-labelledby="foot-nav" class="lg:col-span-3">
+      <h2 id="foot-nav" class="foot-title">Навігація</h2>
+      <ul class="mt-4 flex flex-col gap-2">
+        <li><a class="foot-link" href="#top">Головна</a></li>
+        <li><a class="foot-link" href="#benefits">Переваги</a></li>
+        <li><a class="foot-link" href="#process">Як це працює</a></li>
+        <li><a class="foot-link" href="#calculator">Калькулятор</a></li>
+        <li><a class="foot-link" href="#reviews">Відгуки</a></li>
+        <li><a class="foot-link" href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="lg:col-span-3">
+      <h2 class="foot-title">Слідкуйте за нами</h2>
+      <!-- TODO: замініть заглушки на реальні профілі компанії -->
+      <ul class="mt-4 flex flex-col gap-2">
+        <li><a class="foot-link gap-3" href="https://facebook.com"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-facebook"/></svg>Facebook<span class="sr-only"> (зовнішнє посилання)</span></a></li>
+        <li><a class="foot-link gap-3" href="https://instagram.com"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-instagram"/></svg>Instagram<span class="sr-only"> (зовнішнє посилання)</span></a></li>
+        <li><a class="foot-link gap-3" href="https://x.com"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-x-social"/></svg>X<span class="sr-only"> (колишній Twitter, зовнішнє посилання)</span></a></li>
+        <li><a class="foot-link gap-3" href="https://linkedin.com"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-linkedin"/></svg>LinkedIn<span class="sr-only"> (зовнішнє посилання)</span></a></li>
+        <li><a class="foot-link gap-3" href="https://youtube.com"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-youtube"/></svg>YouTube<span class="sr-only"> (зовнішнє посилання)</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/15">
+    <div class="wrap flex flex-col gap-2 py-6 lg:flex-row lg:items-center lg:justify-between">
+      <p>© 2026 Потік монет. Всі права захищено.</p>
+      <ul class="flex flex-wrap gap-x-6">
+        <li><a class="foot-link" href="/privacy">Політика конфіденційності</a></li>
+        <li><a class="foot-link" href="/terms">Умови надання послуг</a></li>
+        <!-- Кнопку «Налаштування cookies» додайте разом із реальним менеджером згоди -->
+      </ul>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

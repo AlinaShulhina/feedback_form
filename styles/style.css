@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ===== Токени ===== */
+@theme {
+  --color-page: #F4F7FA;
+  --color-brand: #01AD76;
+  --color-action: #007A52;
+  --color-action-hover: #006B47;
+  --color-navy: #081E35;
+  --color-footer: #061729;
+  --color-teal-deep: #297581;
+  --color-ink-blue: #3C5979;
+  --color-mist: #6DA6B4;
+  --color-muted: #55637A;
+  --color-line: #DCE5EB;
+  --color-line-strong: #7B8BA0;
+  --color-mint: #E6F5EF;
+  --color-danger: #B3261E;
+  --color-danger-soft: #FFB4AB;
+  --font-heading: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius-control: 8px;
+  --radius-tile: 14px;
+  --radius-card: 16px;
+  --radius-calc: 24px;
+  --shadow-card: 0 16px 44px rgb(8 30 53 / 8%);
+  --container-page: 1180px;
+  --leading-body: 1.65;
+  --default-transition-duration: 160ms;
+  --text-h1: clamp(2.125rem, 1.2rem + 3.6vw, 3.75rem);
+  --text-h1--line-height: 1.15;
+  --text-h2: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
+  --text-h2--line-height: 1.15;
+  --text-figure: clamp(2rem, 1.2rem + 4vw, 4.5rem);
+  --text-figure--line-height: 1.1;
+}
+
+/* Висота sticky-header у закритому стані; використовується для scroll-padding і hero */
+:root { --header-h: 4.1rem; }
+
+/* ===== База ===== */
+@layer base {
+  html { scroll-padding-top: calc(var(--header-h) + 1rem); }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { transition: none !important; animation: none !important; }
+  }
+
+  h1, h2, h3 { font-family: var(--font-heading); font-weight: 700; }
+  button, [role="tab"], summary, select, input[type="range"], label[for] { cursor: pointer; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  /* main отримує фокус лише від skip-link: рамка не потрібна */
+  main:focus { outline: none; }
+
+  /* Єдиний контур фокуса: action ≥3:1 на світлому, mist на темному */
+  :focus-visible { outline: 3px solid var(--color-action); outline-offset: 3px; }
+  .dark-zone :focus-visible { outline-color: var(--color-mist); }
+  ::placeholder { color: var(--color-muted); opacity: 1; }
+  .dark-zone ::placeholder { color: rgb(255 255 255 / .75); }
+}
+
+/* ===== Компоненти ===== */
+@layer components {
+  /* Контейнери */
+  .wrap { @apply mx-auto w-full max-w-page px-4 md:px-6; }
+  .wrap-md { @apply max-w-3xl; }
+  .wrap-sm { @apply max-w-2xl; }
+  .section { @apply py-16 md:py-22; }
+
+  /* Картки й плашки */
+  .pill { @apply mx-auto mb-4 flex min-h-8 w-fit items-center rounded-full bg-mint px-4 text-sm font-semibold text-action; }
+  .pill-start { @apply mx-0; }
+  .card { @apply min-w-0 rounded-card border border-line bg-white p-5 shadow-card md:p-6; }
+  .card-soft { @apply bg-page; }
+  .card-dark { @apply border-navy bg-navy text-white; }
+  .step-no { @apply text-sm font-semibold tracking-wide text-teal-deep uppercase; }
+  .stat { @apply min-w-0 rounded-card bg-mint p-4; }
+  .stat dt { @apply text-sm text-muted; }
+  .stat dd { @apply break-words font-heading text-xl font-bold; }
+
+  /* Іконки */
+  .icon-tile { @apply grid size-14 shrink-0 place-items-center rounded-tile bg-mint; }
+  /* Логотип: svg має власні поля, тому 64px-картинка виступає за плитку 48px */
+  .logo-tile { @apply flex size-12 shrink-0 items-center justify-center overflow-visible rounded-tile bg-mint text-action; }
+  .logo-tile img { @apply size-16 max-w-none shrink-0; }
+  .ico { @apply size-5 shrink-0 fill-none stroke-current stroke-2; stroke-linecap: round; stroke-linejoin: round; }
+  .ico-lg { @apply size-6; }
+  .yes { @apply mx-auto size-6 stroke-action stroke-3; }
+  .no { @apply mx-auto size-6 stroke-line-strong; }
+  .foot-link .ico { @apply stroke-mist; }
+
+  /* Кнопки */
+  .btn { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-action px-4 align-top font-semibold text-white shadow-xs transition hover:bg-action-hover hover:shadow-md hover:shadow-action/25 active:translate-y-px active:shadow-xs sm:px-6; }
+  .btn-ghost { @apply border border-line-strong bg-white text-navy hover:border-action hover:bg-white hover:text-action hover:shadow-navy/15; }
+  .btn-light { @apply bg-white text-navy hover:bg-mint hover:shadow-black/30; }
+
+  /* Посилання */
+  .nav-link { @apply flex min-h-12 items-center whitespace-nowrap rounded-control px-2 font-medium text-ink-blue transition-colors hover:bg-mint hover:text-action active:bg-mint; }
+  .foot-link { @apply inline-flex min-h-11 items-center rounded-control transition-colors hover:text-brand hover:underline hover:underline-offset-4; }
+  .foot-title { @apply font-sans text-lg font-bold text-white; }
+  .text-link { @apply font-medium text-action underline hover:text-action-hover; }
+
+  /* Симулятор */
+  .tab { @apply min-h-12 rounded-control border border-line px-2 text-sm font-semibold text-ink-blue transition-colors not-aria-selected:hover:bg-mint aria-selected:border-action aria-selected:bg-action aria-selected:text-white sm:px-3 sm:text-base; }
+  .choice { @apply flex min-h-12 items-center justify-center rounded-control border border-line-strong bg-white font-medium text-navy transition-colors hover:border-action peer-checked:border-action peer-checked:bg-action peer-checked:text-white peer-focus-visible:outline-3 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-action; }
+  .slider-head { @apply flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1; }
+  .range { @apply mt-2 h-12 w-full accent-action; }
+  .out { @apply font-heading text-xl font-bold tabular-nums sm:text-2xl; }
+
+  /* Форми. Стан помилки живе тут, а не в base: інакше його перекриє border-line-strong */
+  .field { @apply mt-1 min-h-12 w-full rounded-control border border-line-strong bg-white px-3 text-navy transition-colors hover:border-action focus-visible:border-action aria-invalid:border-danger; }
+  .dark-zone .field { @apply mt-0 bg-navy px-4 text-white; }
+  textarea.field { @apply resize-y py-3; }
+  .label { @apply text-sm font-medium text-ink-blue; }
+  .req::after { content: " *"; color: var(--color-danger); }
+  .status { @apply min-h-6 font-medium text-action; }
+  .status[data-state="error"] { color: var(--color-danger); }
+  .dark-zone .status { color: var(--color-mist); }
+  .dark-zone .status[data-state="error"] { color: var(--color-danger-soft); }
+
+  /* FAQ */
+  .faq { @apply rounded-card border border-line bg-page shadow-card; }
+  .faq summary { @apply flex min-h-14 items-center justify-between gap-4 rounded-card px-5 py-3 font-semibold transition-colors hover:text-action; }
+  .faq p { @apply px-5 pb-5 text-muted; }
+
+  /* Таблиця порівняння */
+  .cmp th, .cmp td { @apply p-3 sm:p-4; }
+  .cmp thead tr { @apply bg-mint; }
+  .cmp thead th { @apply text-center font-semibold; }
+  .cmp thead th:first-child { @apply sticky left-0 z-10 w-36 bg-mint text-left text-sm sm:w-auto sm:text-base; }
+  .cmp tbody tr { @apply border-t border-line; }
+  .cmp tbody th { @apply sticky left-0 z-10 bg-white text-left text-sm font-medium sm:text-base; }
+
+  /* Hero: фон тільки через <img>, тут лише висота на широких екранах */
+  @media (width >= 64rem) {
+    .hero { min-height: min(calc(100svh - var(--header-h)), 44rem); }
+  }
+
+  /* Меню: нижче xl (1280px) ховається, відкривається атрибутом data-open.
+     Відкрите меню не вище за вікно й прокручується (ландшафт на телефоні). */
+  @media (width < 80rem) {
+    .site-nav:not([data-open]) { display: none; }
+    .site-nav[data-open] { max-height: calc(100svh - var(--header-h)); overflow-y: auto; }
+  }
+
+  /* Відео й карта. Пропорцію задає тільки CSS (mobile-first); width/height-атрибути на iframe не ставимо */
+  .video, .map { margin-inline: auto; max-width: 880px; }
+  .video__frame, .map__frame { display: block; width: 100%; height: auto; border: 0; border-radius: var(--radius-control); box-shadow: var(--shadow-card); background-color: var(--color-navy); }
+  .video__frame { aspect-ratio: 16 / 9; }
+  .map__frame { aspect-ratio: 1 / 1; }
+  @media (width >= 40rem) {
+    .video__frame, .map__frame { border-radius: var(--radius-card); }
+    .map__frame { aspect-ratio: 4 / 3; }
+  }
+  @media (width >= 48rem) { .map__frame { aspect-ratio: 16 / 9; max-height: 70svh; } }
+}
