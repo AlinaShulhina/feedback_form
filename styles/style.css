@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Файли, у яких Tailwind шукає класи (шляхи відносно цього файлу).
+   Класи станів полів (border-red-500, border-green-600) живуть у js/validation.js. */
+@source "../index.html";
+@source "../js";
+
 /* ===== Токени ===== */
 @theme {
   --color-page: #F4F7FA;
@@ -94,6 +99,8 @@
   .btn { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-control bg-action px-4 align-top font-semibold text-white shadow-xs transition hover:bg-action-hover hover:shadow-md hover:shadow-action/25 active:translate-y-px active:shadow-xs sm:px-6; }
   .btn-ghost { @apply border border-line-strong bg-white text-navy hover:border-action hover:bg-white hover:text-action hover:shadow-navy/15; }
   .btn-light { @apply bg-white text-navy hover:bg-mint hover:shadow-black/30; }
+  /* Кнопка під час відправки: лишається в фокусі, але виглядає неактивною */
+  .btn[aria-disabled="true"] { @apply cursor-not-allowed opacity-70 shadow-xs hover:bg-action hover:shadow-xs active:translate-y-0; }
 
   /* Посилання */
   .nav-link { @apply flex min-h-12 items-center whitespace-nowrap rounded-control px-2 font-medium text-ink-blue transition-colors hover:bg-mint hover:text-action active:bg-mint; }
@@ -108,12 +115,24 @@
   .range { @apply mt-2 h-12 w-full accent-action; }
   .out { @apply font-heading text-xl font-bold tabular-nums sm:text-2xl; }
 
-  /* Форми. Стан помилки живе тут, а не в base: інакше його перекриє border-line-strong */
-  .field { @apply mt-1 min-h-12 w-full rounded-control border border-line-strong bg-white px-3 text-navy transition-colors hover:border-action focus-visible:border-action aria-invalid:border-danger; }
+  /* Форми.
+     Колір рамки помилки й успіху ставить validation.js утилітами border-red-500 і
+     border-green-600 (утиліти сильніші за цей шар, тому перекривають hover і focus).
+     Тут їх не дублюємо, щоб був один джерело стану. */
+  .field { @apply mt-1 min-h-12 w-full rounded-control border border-line-strong bg-white px-3 text-navy transition-colors hover:border-action focus-visible:border-action; }
   .dark-zone .field { @apply mt-0 bg-navy px-4 text-white; }
   textarea.field { @apply resize-y py-3; }
   .label { @apply text-sm font-medium text-ink-blue; }
   .req::after { content: " *"; color: var(--color-danger); }
+
+  /* Підказки й помилки під полем. Елемент помилки завжди в DOM (live-регіон),
+     відступ з'являється лише коли в ньому є текст. */
+  .hint { @apply mt-1 text-sm text-muted; }
+  .dark-zone .hint { color: rgb(255 255 255 / .75); }
+  .err { @apply text-sm font-medium text-danger; }
+  .err:not(:empty) { @apply mt-1; }
+  .dark-zone .err { color: var(--color-danger-soft); }
+
   .status { @apply min-h-6 font-medium text-action; }
   .status[data-state="error"] { color: var(--color-danger); }
   .dark-zone .status { color: var(--color-mist); }

@@ -8,7 +8,10 @@
   <meta name="theme-color" content="#081E35">
   <!-- Збірка: npx @tailwindcss/cli -i styles/style.css -o styles/output.css --minify -->
   <link rel="stylesheet" href="styles/output.css">
+  <!-- Без JavaScript меню лишається доступним і на вузьких екранах -->
+  <noscript><style>@media (width < 80rem) { .site-nav:not([data-open]) { display: block !important; } }</style></noscript>
   <script src="js/main.js" defer></script>
+  <script src="js/validation.js" defer></script>
 </head>
 <body id="top" class="bg-page leading-body text-navy antialiased">
 
@@ -299,23 +302,58 @@
 
       <details class="group mx-auto mt-10 max-w-3xl">
         <summary class="btn btn-ghost mx-auto flex w-fit">Залишити відгук<svg class="ico transition-transform group-open:rotate-180" aria-hidden="true"><use href="#i-chevron-down"/></svg></summary>
-        <form id="review-form" class="mt-6 rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
+        <!-- Замініть action на реальний endpoint і увімкніть SEND_TO_SERVER у js/validation.js -->
+        <form id="review-form" method="post" action="/api/review" class="mt-6 rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
           <h3 class="text-2xl">Залиште свій відгук</h3>
           <p class="mt-1 text-sm text-muted">Поля з * обов'язкові.</p>
+
           <div class="mt-6 grid gap-5 sm:grid-cols-2">
-            <div><label for="r-name" class="label req">Ім'я</label><input id="r-name" name="name" type="text" required autocomplete="name" class="field"></div>
-            <div><label for="r-role" class="label">Роль або професія</label><input id="r-role" name="role" type="text" autocomplete="organization-title" class="field"></div>
+            <div>
+              <label for="r-name" class="label req">Ім'я</label>
+              <input id="r-name" name="name" type="text" required maxlength="60"
+                     autocomplete="name" autocapitalize="words" enterkeyhint="next"
+                     aria-invalid="false" aria-describedby="r-name-error" class="field">
+              <p id="r-name-error" class="err" aria-live="polite"></p>
+            </div>
+
+            <div>
+              <label for="r-role" class="label">Роль або професія</label>
+              <input id="r-role" name="role" type="text" maxlength="60"
+                     autocomplete="organization-title" enterkeyhint="next" class="field">
+            </div>
+
             <div class="sm:col-span-2">
               <label for="r-rating" class="label">Оцінка</label>
               <select id="r-rating" name="rating" class="field">
-                <option value="5">5 — чудово</option><option value="4">4 — добре</option><option value="3">3 — нормально</option><option value="2">2 — слабко</option><option value="1">1 — погано</option>
+                <option value="5">5 — чудово</option>
+                <option value="4">4 — добре</option>
+                <option value="3">3 — нормально</option>
+                <option value="2">2 — слабко</option>
+                <option value="1">1 — погано</option>
               </select>
             </div>
           </div>
-          <div class="mt-5"><label for="r-text" class="label req">Ваш відгук</label><textarea id="r-text" name="text" rows="4" required class="field"></textarea></div>
+
+          <div class="mt-5">
+            <label for="r-text" class="label req">Ваш відгук</label>
+            <textarea id="r-text" name="text" rows="4" required maxlength="1000"
+                      enterkeyhint="enter" aria-invalid="false"
+                      aria-describedby="r-text-hint r-text-error" class="field"></textarea>
+            <div class="flex items-start justify-between gap-4">
+              <p id="r-text-hint" class="hint">Від 10 до 1000 символів</p>
+              <p id="r-text-counter" class="hint shrink-0 tabular-nums" aria-hidden="true">0 / 1000</p>
+            </div>
+            <p id="r-text-error" class="err" aria-live="polite"></p>
+          </div>
+
+          <!-- Honeypot: людині не видно й недоступний з клавіатури, боти його заповнюють -->
+          <div class="sr-only" aria-hidden="true">
+            <input type="text" name="contact_pref" tabindex="-1" autocomplete="off">
+          </div>
+
           <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button type="submit" class="btn">Надіслати відгук</button>
-            <p id="review-status" class="status" role="alert" data-status></p>
+            <p id="review-status" class="status" role="status" data-status></p>
           </div>
         </form>
       </details>
@@ -344,21 +382,60 @@
   <!-- РЕЄСТРАЦІЯ -->
   <section id="signup" aria-labelledby="signup-title" class="section">
     <div class="wrap wrap-sm">
-      <form id="signup-form" class="rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
+      <!-- Замініть action на реальний endpoint і увімкніть SEND_TO_SERVER у js/validation.js -->
+      <form id="signup-form" method="post" action="/api/signup" class="rounded-card border border-line bg-white p-5 shadow-card md:p-8" novalidate>
         <h2 id="signup-title" class="text-center text-h2">Створіть свій план</h2>
         <p class="mt-2 text-center text-muted">Зареєструйтесь, щоб зберігати сценарії та отримувати підказки. Поля з * обов'язкові.</p>
+
         <div class="mt-6 space-y-5">
-          <div><label for="s-name" class="label req">Ім'я</label><input id="s-name" name="name" type="text" required autocomplete="name" class="field"></div>
-          <div><label for="s-email" class="label req">Email</label><input id="s-email" name="email" type="email" required autocomplete="email" class="field"></div>
-          <div><label for="s-phone" class="label">Телефон</label><input id="s-phone" name="phone" type="tel" autocomplete="tel" placeholder="+380" class="field"></div>
-          <label for="s-terms" class="flex min-h-12 items-start gap-3">
-            <input id="s-terms" name="terms" type="checkbox" required class="mt-1 size-6 shrink-0 accent-action">
-            <span class="text-muted">Я погоджуюсь з <a href="/terms" class="text-link">умовами користування</a> та <a href="/privacy" class="text-link">політикою конфіденційності</a>. <span class="req" aria-hidden="true"></span></span>
-          </label>
+          <div>
+            <label for="s-name" class="label req">Ім'я</label>
+            <input id="s-name" name="name" type="text" required maxlength="60"
+                   autocomplete="name" autocapitalize="words" enterkeyhint="next"
+                   aria-invalid="false" aria-describedby="s-name-error" class="field">
+            <p id="s-name-error" class="err" aria-live="polite"></p>
+          </div>
+
+          <div>
+            <label for="s-email" class="label req">Email</label>
+            <input id="s-email" name="email" type="email" required maxlength="254"
+                   autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off"
+                   spellcheck="false" enterkeyhint="next"
+                   aria-invalid="false" aria-describedby="s-email-error" class="field">
+            <p id="s-email-error" class="err" aria-live="polite"></p>
+          </div>
+
+          <div>
+            <label for="s-phone" class="label">Телефон <span class="font-normal text-muted">(необов'язково)</span></label>
+            <input id="s-phone" name="phone" type="tel" maxlength="30"
+                   autocomplete="tel" inputmode="tel" enterkeyhint="next"
+                   aria-invalid="false" aria-describedby="s-phone-hint s-phone-error" class="field">
+            <p id="s-phone-hint" class="hint">Формат: +380501234567, без пробілів, дужок і дефісів</p>
+            <p id="s-phone-error" class="err" aria-live="polite"></p>
+          </div>
+
+          <div>
+            <label for="s-terms" class="flex min-h-12 items-start gap-3">
+              <input id="s-terms" name="terms" type="checkbox" value="yes" required
+                     aria-invalid="false" aria-describedby="s-terms-error"
+                     class="mt-1 size-6 shrink-0 accent-action aria-invalid:outline-2 aria-invalid:outline-offset-2 aria-invalid:outline-danger">
+              <span class="text-muted">Я погоджуюсь з
+                <a href="/terms" target="_blank" rel="noopener noreferrer" class="text-link">умовами користування<span class="sr-only"> (відкриється в новій вкладці)</span></a> та
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" class="text-link">політикою конфіденційності<span class="sr-only"> (відкриється в новій вкладці)</span></a>.
+                <span class="req" aria-hidden="true"></span></span>
+            </label>
+            <p id="s-terms-error" class="err" aria-live="polite"></p>
+          </div>
         </div>
+
+        <!-- Honeypot: людині не видно й недоступний з клавіатури, боти його заповнюють -->
+        <div class="sr-only" aria-hidden="true">
+          <input type="text" name="contact_pref" tabindex="-1" autocomplete="off">
+        </div>
+
         <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <button type="submit" class="btn">Створити</button>
-          <p id="signup-status" class="status" role="alert" data-status></p>
+          <p id="signup-status" class="status" role="status" data-status></p>
         </div>
       </form>
     </div>
@@ -398,14 +475,29 @@
         Потік монет
       </a>
       <p class="mt-6 max-w-md">Приєднуйтесь до розсилки, щоб першими дізнаватися про нові функції та релізи.</p>
-      <form id="news-form" class="mt-5 max-w-md" novalidate>
-        <label for="n-email" class="sr-only">Email для розсилки</label>
+      <!-- Замініть action на реальний endpoint і увімкніть SEND_TO_SERVER у js/validation.js -->
+      <form id="news-form" method="post" action="/api/newsletter" class="mt-5 max-w-md" novalidate>
+        <label for="n-email" class="sr-only">Введіть ваш email для розсилки</label>
         <div class="flex flex-col gap-3 xl:flex-row">
-          <input id="n-email" name="email" type="email" required autocomplete="email" placeholder="Введіть ваш email" class="field">
+          <input id="n-email" name="email" type="email" required maxlength="254"
+                 autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off"
+                 spellcheck="false" enterkeyhint="send" placeholder="Введіть ваш email"
+                 aria-invalid="false" aria-describedby="n-email-error" class="field">
           <button type="submit" class="btn shrink-0">Підписатися</button>
         </div>
-        <p class="mt-4">Підписуючись, ви погоджуєтесь з нашою <a href="/privacy" class="font-semibold text-white underline underline-offset-4 hover:text-mist">Політикою конфіденційності</a> та надаєте згоду на отримання оновлень від нашої компанії.</p>
-        <p id="news-status" class="status mt-2" role="alert" data-status></p>
+        <p id="n-email-error" class="err" aria-live="polite"></p>
+
+        <p class="mt-4">Підписуючись, ви погоджуєтесь з нашою
+          <a href="/privacy" target="_blank" rel="noopener noreferrer"
+             class="font-semibold text-white underline underline-offset-4 hover:text-mist">Політикою конфіденційності<span class="sr-only"> (відкриється в новій вкладці)</span></a>
+          та надаєте згоду на отримання оновлень від нашої компанії.</p>
+
+        <!-- Honeypot: людині не видно й недоступний з клавіатури, боти його заповнюють -->
+        <div class="sr-only" aria-hidden="true">
+          <input type="text" name="contact_pref" tabindex="-1" autocomplete="off">
+        </div>
+
+        <p id="news-status" class="status mt-2" role="status" data-status></p>
       </form>
     </div>
     <nav aria-labelledby="foot-company" class="lg:col-span-2">
@@ -450,5 +542,34 @@
     </div>
   </div>
 </footer>
+
+<!-- Модальне вікно успіху: відкривається з js/validation.js лише після успішної валідації -->
+<dialog
+  id="success-modal"
+  aria-labelledby="success-modal-title"
+  aria-describedby="success-modal-text"
+  class="fixed inset-0 m-auto h-fit max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-card bg-white p-0 text-navy shadow-2xl backdrop:bg-navy/70">
+  <!-- На самому <dialog> не додавайте display-класів (flex, grid): вони перекриють display: none -->
+  <div class="p-6 text-center sm:p-8">
+    <!-- Декоративна іконка: прихована від скрінрідерів -->
+    <div class="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-mint text-action" aria-hidden="true">
+      <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12.5l4.5 4.5L19 7.5" />
+      </svg>
+    </div>
+
+    <h2 id="success-modal-title" class="text-2xl">Успішно!</h2>
+    <p id="success-modal-text" class="mt-2 text-muted">Форму успішно перевірено.</p>
+
+    <button
+      type="button"
+      id="success-modal-close"
+      autofocus
+      class="btn mt-6 w-full focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-action sm:w-auto sm:min-w-40">
+      Закрити
+    </button>
+  </div>
+</dialog>
+
 </body>
 </html>
